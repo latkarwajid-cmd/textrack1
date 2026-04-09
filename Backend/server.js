@@ -25,10 +25,13 @@ const app = express();
 
 // ✅ Middleware
 
-app.use(cors({
-  origin: "https://your-netlify-url.netlify.app"
-}));
 
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+  })
+);
 app.use(express.json());
 
 

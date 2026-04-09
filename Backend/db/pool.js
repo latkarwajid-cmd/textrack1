@@ -1,19 +1,13 @@
 const mysql2 = require("mysql2");
 
 const pool = mysql2.createPool({
-  host: process.env.MYSQLHOST || "localhost",
-  user: process.env.MYSQLUSER || "root",
-  password: process.env.MYSQLPASSWORD || "manager",
-  database: process.env.MYSQLDATABASE || "text_db",
-  port: Number(process.env.MYSQLPORT || 3306),
-
-  ssl: {
-    rejectUnauthorized: false
-  },
-
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: Number(process.env.MYSQLPORT),
+  ssl: { rejectUnauthorized: false },
   connectionLimit: 10,
-  waitForConnections: true,
-  queueLimit: 0
 });
 
 pool.on("error", (error) => {
