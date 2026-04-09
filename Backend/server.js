@@ -7,7 +7,7 @@ const path = require("path");
 
 const { authUser } = require("./Utils/Auth");
 const productionRoutes = require("./routes/production");
-const { startWatcher } = require("./utils/fileWatcher");
+const { startWatcher } = require("./Utils/fileWatcher");
 
 // Route imports
 const authRoutes = require("./routes/User");
