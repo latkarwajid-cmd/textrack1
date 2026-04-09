@@ -10,7 +10,7 @@ const downloadExcel = async () => {
   const token = localStorage.getItem("token");
 
   const response = await fetch(
-    "http://localhost:5000/production/export-excel",
+    "https://textrack1-2.onrender.com/production/export-excel",
     {
       method: "GET",
       headers: {
@@ -48,7 +48,7 @@ const downloadExcel = async () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/production/records', {
+        const response = await axios.get('https://textrack1-2.onrender.com/production/records', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import AdminNavbar from "../../components/AdminNavbar";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_BASE_URL || "https://textrack1-2.onrender.com";
 
 function Parties() {
   const token = localStorage.getItem("token");

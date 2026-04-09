@@ -22,7 +22,7 @@ function AdminUpload() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/production/upload-excel",
+        "https://textrack1-2.onrender.com/production/upload-excel",
         {
           method: "POST",
           headers: {
