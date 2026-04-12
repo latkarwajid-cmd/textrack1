@@ -12,6 +12,8 @@ const productionRoutes = require("./routes/production");
 // Route imports
 const authRoutes = require("./routes/User");
 const adminRoutes = require("./routes/Admin");
+const googleAuthRoutes = require("./routes/googleAuth");
+
 
 // const partyRoutes = require("./routes/partyRoutes");
 // const machineRoutes = require("./routes/machineRoutes");
@@ -58,7 +60,7 @@ app.use(authUser);
 app.use("/user", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/production", productionRoutes);
-
+app.use("/auth", googleAuthRoutes);
 
 
 // app.use("/api/parties", partyRoutes);

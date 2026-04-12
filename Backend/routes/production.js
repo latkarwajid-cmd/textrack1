@@ -263,7 +263,7 @@ router.get(
         
     FROM loom_production
 WHERE party_id = ?
-ORDER BY beam_receive_date DESC, id DESC;
+ORDER BY beam_receive_date DESC, id DESC;   
     `;
 
     pool.query(sql, [partyId], (error, data) => {
@@ -342,5 +342,7 @@ router.get("/export-excel", authUser, async (req, res) => {
   });
 
 });
+
+
 
 module.exports = router;

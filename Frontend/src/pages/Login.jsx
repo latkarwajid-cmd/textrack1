@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { GoogleLogin } from "@react-oauth/google";
 import "./Login.css";
 
 const API_BASE_URL =
@@ -62,6 +63,7 @@ function Login() {
 
       toast.success("Login successful 🎉");
       navigate("/home", { replace: true });
+
     } catch (error) {
       const message =
         error?.response?.data?.error ||
@@ -69,8 +71,41 @@ function Login() {
         "Login failed";
 
       toast.error(message);
+
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ✅ Google login handler
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/google`,
+        {
+          token: credentialResponse.credential,
+        }
+      );
+
+      const token = response?.data?.data?.token;
+      const role = response?.data?.data?.role;
+
+      if (!token) {
+        toast.error("Google login failed");
+        return;
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role || "");
+
+      toast.success("Google login successful 🎉");
+      navigate("/home", { replace: true });
+
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.error ||
+        "Google login failed"
+      );
     }
   };
 
@@ -101,6 +136,17 @@ function Login() {
         <button type="submit" disabled={isLoading}>
           {isLoading ? "Logging in..." : "Login"}
         </button>
+
+        {/* Divider */}
+        <div style={{ margin: "20px 0", textAlign: "center" }}>
+          OR
+        </div>
+
+        {/* Google Login Button */}
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={() => toast.error("Google login failed")}
+        />
       </form>
     </main>
   );
