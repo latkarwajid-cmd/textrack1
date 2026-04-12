@@ -1,63 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./Production.css";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://textrack1-2.onrender.com";
 
 const ProductionRecords = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const downloadExcel = async () => {
 
-  const token = localStorage.getItem("token");
+  const downloadExcel = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-  const response = await fetch(
-    "https://textrack1-2.onrender.com/production/export-excel",
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      const response = await fetch(
+        `${API_BASE_URL}/production/export-excel`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "production.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      alert("Failed to download Excel");
     }
-  );
-
-  const blob = await response.blob();
-
-  const url = window.URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-
-  a.href = url;
-
-  a.download = "production.xlsx";
-
-  document.body.appendChild(a);
-
-  a.click();
-
-  a.remove();
-
-};
-
+  };
 
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          setError('No authentication token found. Please log in.');
-          setLoading(false);
-          return;
-        }
+        const token = localStorage.getItem("token");
 
-        const response = await axios.get('https://textrack1-2.onrender.com/production/records', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axios.get(
+          `${API_BASE_URL}/production/records`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         setRecords(response.data.data);
-        setLoading(false);
       } catch (err) {
-        setError(err.response?.data?.error || 'Failed to fetch records');
+        setError(
+          err.response?.data?.error || "Failed to fetch records"
+        );
+      } finally {
         setLoading(false);
       }
     };
@@ -65,65 +66,85 @@ const downloadExcel = async () => {
     fetchRecords();
   }, []);
 
-  if (loading) return <div>Loading records...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return <div className="status-message">Loading records...</div>;
+
+  if (error)
+    return <div className="status-message error">{error}</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Your Production Records</h2>
+    <div className="records-container">
+      <div className="records-header">
+        <h2>Your Production Records</h2>
+
+        <button className="download-btn" onClick={downloadExcel}>
+          Download Excel 📥
+        </button>
+      </div>
+
       {records.length === 0 ? (
         <p>No records found.</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Beam Receive Date</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Picks</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Party Name</th>
-             <th style={{ border: '1px solid #ddd', padding: '8px' }}>Sizing Name</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Total Ends</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Reed Count</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Reed Space</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Warp CT</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Weft CT</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Weave Finish</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Flange No</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Actual Beam</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Beam Start Date</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Loom No</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Beam Fall</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Beam Status</th>
-           
-            </tr>
-          </thead>
-          <tbody>
-            {records.map((record, index) => (
-              <tr key={index}>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.beam_receive_date ? new Date(record.beam_receive_date).toLocaleDateString() : ''}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.picks}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.party_name}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.sizing_name}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.total_ends}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.reed_count}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.reed_space}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.warp_ct}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.weft_ct}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.weave_finish}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.flange_no}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.actual_beam}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.beam_start_date ? new Date(record.beam_start_date).toLocaleDateString() : ''}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.loom_no}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.beam_fall}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{record.beam_status}</td>
-          
+        <div className="table-wrapper">
+          <table className="records-table">
+            <thead>
+              <tr>
+                <th>Beam Receive</th>
+                <th>Picks</th>
+                <th>Party</th>
+                <th>Sizing</th>
+                <th>Total Ends</th>
+                <th>Reed Count</th>
+                <th>Reed Space</th>
+                <th>Warp CT</th>
+                <th>Weft CT</th>
+                <th>Weave Finish</th>
+                <th>Flange</th>
+                <th>Actual Beam</th>
+                <th>Start Date</th>
+                <th>Loom No</th>
+                <th>Beam Fall</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {records.map((record, index) => (
+                <tr key={index}>
+                  <td>
+                    {record.beam_receive_date
+                      ? new Date(
+                          record.beam_receive_date
+                        ).toLocaleDateString()
+                      : ""}
+                  </td>
+                  <td>{record.picks}</td>
+                  <td>{record.party_name}</td>
+                  <td>{record.sizing_name}</td>
+                  <td>{record.total_ends}</td>
+                  <td>{record.reed_count}</td>
+                  <td>{record.reed_space}</td>
+                  <td>{record.warp_ct}</td>
+                  <td>{record.weft_ct}</td>
+                  <td>{record.weave_finish}</td>
+                  <td>{record.flange_no}</td>
+                  <td>{record.actual_beam}</td>
+                  <td>
+                    {record.beam_start_date
+                      ? new Date(
+                          record.beam_start_date
+                        ).toLocaleDateString()
+                      : ""}
+                  </td>
+                  <td>{record.loom_no}</td>
+                  <td>{record.beam_fall}</td>
+                  <td>{record.beam_status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      <button onClick={downloadExcel}>
-  Download Excel
-</button>
     </div>
   );
 };

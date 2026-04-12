@@ -2,15 +2,20 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "./Login.css";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://textrack1-2.onrender.com";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://textrack1-2.onrender.com";
 
 function Login() {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
-    password: ""
+    password: "",
   });
+
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -38,10 +43,11 @@ function Login() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${API_BASE_URL}/user/login`, {
-        email,
-        password
-      });
+
+      const response = await axios.post(
+        `${API_BASE_URL}/user/login`,
+        { email, password }
+      );
 
       const token = response?.data?.data?.token;
       const role = response?.data?.data?.role;
@@ -53,13 +59,15 @@ function Login() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role || "");
-      toast.success("Login successful");
+
+      toast.success("Login successful 🎉");
       navigate("/home", { replace: true });
     } catch (error) {
       const message =
         error?.response?.data?.error ||
         error?.response?.data?.message ||
         "Login failed";
+
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -67,31 +75,27 @@ function Login() {
   };
 
   return (
-    <main className="login-page">
+    <main className="login-container">
       <form className="login-card" onSubmit={handleSubmit}>
         <h1>TexTrack Login</h1>
         <p className="subtitle">Sign in to continue</p>
 
-        <label htmlFor="email">Email</label>
+        <label>Email</label>
         <input
-          id="email"
           name="email"
           type="email"
-          placeholder="admin@textrack.com"
+          placeholder="abc@gmail.com"
           value={formData.email}
           onChange={handleChange}
-          autoComplete="email"
         />
 
-        <label htmlFor="password">Password</label>
+        <label>Password</label>
         <input
-          id="password"
           name="password"
           type="password"
           placeholder="Enter password"
           value={formData.password}
           onChange={handleChange}
-          autoComplete="current-password"
         />
 
         <button type="submit" disabled={isLoading}>

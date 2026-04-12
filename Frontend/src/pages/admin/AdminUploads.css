@@ -1,0 +1,82 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+
+.admin-sidebar {
+  width: 250px;
+  background: #4f46e5;
+  color: white;
+  padding: 20px;
+}
+
+.admin-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+/* Main content */
+
+.admin-main {
+  flex: 1;
+  padding: 40px;
+  background: #f5f7fb;
+}
+
+/* Upload card */
+
+.upload-card {
+  background: white;
+  padding: 35px;
+  border-radius: 12px;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.upload-card h2 {
+  margin-bottom: 20px;
+}
+
+.upload-card input {
+  margin-bottom: 20px;
+}
+
+.upload-card button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.upload-card button:hover {
+  background: #4338ca;
+}
+
+.upload-message {
+  margin-top: 15px;
+  font-weight: 500;
+}
+
+/* Mobile layout */
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+  }
+
+  .admin-main {
+    padding: 20px;
+  }
+
+  .upload-card {
+    width: 100%;
+  }
+}
