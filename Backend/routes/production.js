@@ -92,19 +92,31 @@ router.post(
         if (idx > 0) headerIndexes[key] = idx;
       });
 
-      const parseExcelDate = (value) => {
-        if (!value) return null;
+const parseExcelDate = (value) => {
+  if (!value) return null;
 
-        if (value instanceof Date) return value;
+  // Already a Date object
+  if (value instanceof Date) return value;
 
-        if (typeof value === "number") {
-          const utcDays = value - 25569;
-          return new Date(utcDays * 86400 * 1000);
-        }
+  // Excel serial number format
+  if (typeof value === "number") {
+    const utcDays = value - 25569;
+    return new Date(utcDays * 86400 * 1000);
+  }
 
-        const parsed = new Date(value);
-        return isNaN(parsed.getTime()) ? null : parsed;
-      };
+  // Normalize string formats like "2 - January - 2026"
+  if (typeof value === "string") {
+    const cleaned = value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+
+    const parsed = new Date(cleaned);
+
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return null;
+};
 
       for (let i = 2; i <= sheet.rowCount; i++) {
 
