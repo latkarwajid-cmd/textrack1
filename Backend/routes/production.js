@@ -261,9 +261,9 @@ router.get(
         beam_fall,
         beam_status
         
-      FROM loom_production
-      WHERE party_id = ?
-      ORDER BY id DESC
+    FROM loom_production
+WHERE party_id = ?
+ORDER BY beam_receive_date DESC, id DESC;
     `;
 
     pool.query(sql, [partyId], (error, data) => {
