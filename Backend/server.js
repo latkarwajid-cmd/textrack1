@@ -2,12 +2,12 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const ExcelJS = require("exceljs");
+// const ExcelJS = require("exceljs");
 const path = require("path");
 
 const { authUser } = require("./Utils/Auth");
 const productionRoutes = require("./routes/production");
-const { startWatcher } = require("./Utils/fileWatcher");
+// const { startWatcher } = require("./Utils/fileWatcher");
 
 // Route imports
 const authRoutes = require("./routes/User");
@@ -86,7 +86,7 @@ app.use((req, res) => {
 });
 
 // ✅ File Watcher: Auto-upload Excel files
-startWatcher();
+// startWatcher();
 
 // ✅ Global error handler
 
