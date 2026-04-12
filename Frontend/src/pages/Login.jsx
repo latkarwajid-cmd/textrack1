@@ -78,36 +78,41 @@ function Login() {
   };
 
   // ✅ Google login handler
-  const handleGoogleLogin = async (credentialResponse) => {
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/auth/google`,
-        {
-          token: credentialResponse.credential,
-        }
-      );
-
-      const token = response?.data?.data?.token;
-      const role = response?.data?.data?.role;
-
-      if (!token) {
-        toast.error("Google login failed");
-        return;
-      }
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role || "");
-
-      toast.success("Google login successful 🎉");
-      navigate("/home", { replace: true });
-
-    } catch (error) {
-      toast.error(
-        error?.response?.data?.error ||
-        "Google login failed"
-      );
+const handleGoogleLogin = async (credentialResponse) => {
+  try {
+    if (!credentialResponse?.credential) {
+      toast.error("Google token missing");
+      return;
     }
-  };
+
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/google`,
+      {
+        token: credentialResponse.credential,
+      }
+    );
+
+    const token = response?.data?.data?.token;
+    const role = response?.data?.data?.role;
+
+    if (!token) {
+      toast.error("Google login failed");
+      return;
+    }
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", role || "");
+
+    toast.success("Google login successful 🎉");
+    navigate("/home", { replace: true });
+
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.error ||
+      "Google login failed"
+    );
+  }
+};
 
   return (
     <main className="login-container">
