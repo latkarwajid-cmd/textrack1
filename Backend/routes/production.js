@@ -43,7 +43,7 @@ router.post(
 
       console.log(`Using sheet: ${sheet.name}, Rows: ${sheet.rowCount}`);
 
-      const headerRow = sheet.getRow(1);
+      const headerRow = sheet.getRow(2);
 
       const normalize = (s) =>
         (s || "")
@@ -124,7 +124,7 @@ router.post(
       };
 
       // Loop rows
-      for (let i = 2; i <= sheet.rowCount; i++) {
+      for (let i = 3; i <= sheet.rowCount; i++) {
         const row = sheet.getRow(i);
 
         let partyName = null;
