@@ -123,7 +123,7 @@ const handleGoogleLogin = async (credentialResponse) => {
         <label>Email</label>
         <input
           name="email"
-          type="email"
+          type="text"
           placeholder="abc@gmail.com"
           value={formData.email}
           onChange={handleChange}

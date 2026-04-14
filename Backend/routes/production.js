@@ -279,8 +279,17 @@ router.get(
         ON lp.party_id = p.id
       WHERE lp.party_id = ?
       AND p.is_active = 1
-      ORDER BY lp.beam_receive_date DESC, lp.id DESC
-    `;
+      ORDER BY
+  CASE lp.beam_status
+    WHEN 'ON LOOM' THEN 1
+    WHEN 'AWATING LOOM IN' THEN 2
+    WHEN 'fabric pending' THEN 3
+    WHEN 'CUT BEAM' THEN 4
+    ELSE 5
+  END,
+  lp.beam_receive_date DESC
+`;
+
 
     pool.query(sql, [partyId], (error, data) => {
 
