@@ -2,31 +2,25 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-// const ExcelJS = require("exceljs");
 const path = require("path");
 
 const { authUser } = require("./Utils/Auth");
-const productionRoutes = require("./routes/production");
-// const { startWatcher } = require("./Utils/fileWatcher");
 
 // Route imports
 const authRoutes = require("./routes/User");
 const adminRoutes = require("./routes/Admin");
+const productionRoutes = require("./routes/production");
 const googleAuthRoutes = require("./routes/googleAuth");
 
-
-// const partyRoutes = require("./routes/partyRoutes");
-// const machineRoutes = require("./routes/machineRoutes");
-// const orderRoutes = require("./routes/orderRoutes");
-
-// DB connection (optional auto-check)
+// DB connection
 const pool = require("./db/pool");
 
 const app = express();
 
 
+// =======================
 // ✅ Middleware
-
+// =======================
 
 app.use(
   cors({
@@ -34,10 +28,13 @@ app.use(
     credentials: true
   })
 );
+
 app.use(express.json());
 
 
+// =======================
 // ✅ Database connection check
+// =======================
 
 pool.getConnection((err, connection) => {
   if (err) {
@@ -49,28 +46,27 @@ pool.getConnection((err, connection) => {
 });
 
 
-// ✅ Global authentication middleware
-// (skips login/register automatically inside Auth.js)
+// =======================
+// ✅ PUBLIC ROUTES (No authentication required)
+// =======================
+
+app.use("/auth", googleAuthRoutes);   // Google login routes
+app.use("/user", authRoutes);         // login / register routes
+
+
+// =======================
+// ✅ PROTECTED ROUTES (Require authentication)
+// =======================
 
 app.use(authUser);
 
-
-// ✅ Routes
-
-app.use("/user", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/production", productionRoutes);
-app.use("/auth", googleAuthRoutes);
 
 
-// app.use("/api/parties", partyRoutes);
-
-// app.use("/api/machines", machineRoutes);
-
-// app.use("/api/orders", orderRoutes);
-
-
+// =======================
 // ✅ Health check route
+// =======================
 
 app.get("/", (req, res) => {
   res.json({
@@ -79,7 +75,9 @@ app.get("/", (req, res) => {
 });
 
 
+// =======================
 // ✅ 404 handler
+// =======================
 
 app.use((req, res) => {
   res.status(404).json({
@@ -87,10 +85,10 @@ app.use((req, res) => {
   });
 });
 
-// ✅ File Watcher: Auto-upload Excel files
-// startWatcher();
 
+// =======================
 // ✅ Global error handler
+// =======================
 
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
@@ -101,7 +99,9 @@ app.use((err, req, res, next) => {
 });
 
 
+// =======================
 // ✅ Start server
+// =======================
 
 const PORT = process.env.PORT || 5000;
 
