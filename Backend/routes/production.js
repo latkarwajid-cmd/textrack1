@@ -17,7 +17,6 @@ router.post(
   upload.single("file"),
   async (req, res) => {
     try {
-
       if (!req.file) {
         return res.status(400).json({
           error: "Missing file upload. Use form-data with key 'file'."
@@ -27,15 +26,22 @@ router.post(
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(req.file.path);
 
-      const sheet = workbook.getWorksheet(1);
+      // ✅ Select sheet named "Data"
+      let sheet = workbook.getWorksheet("Data");
+
+      // Debug: show sheet names once (remove later if not needed)
+      console.log(
+        "Available sheets:",
+        workbook.worksheets.map((s) => s.name)
+      );
 
       if (!sheet) {
-        return res.status(400).json({ error: "Excel sheet not found" });
+        return res.status(400).json({
+          error: "Sheet named 'Data' not found in Excel file"
+        });
       }
 
-      console.log(
-        `Sheet name: ${sheet.name}, Rows: ${sheet.rowCount}`
-      );
+      console.log(`Using sheet: ${sheet.name}, Rows: ${sheet.rowCount}`);
 
       const headerRow = sheet.getRow(1);
 
@@ -46,7 +52,7 @@ router.post(
           .toLowerCase()
           .replace(/[^a-z0-9]/g, "");
 
-      // detect party column
+      // Detect party column
       const partyNameColumnIdx = headerRow.values.findIndex(
         (val) =>
           typeof val === "string" &&
@@ -61,7 +67,7 @@ router.post(
         });
       }
 
-      // column mapping
+      // Column mapping
       const columnAliases = {
         beam_receive_date: ["beamreceivedate"],
         picks: ["picks"],
@@ -92,34 +98,33 @@ router.post(
         if (idx > 0) headerIndexes[key] = idx;
       });
 
-const parseExcelDate = (value) => {
-  if (!value) return null;
+      // Date parser helper
+      const parseExcelDate = (value) => {
+        if (!value) return null;
 
-  // Already a Date object
-  if (value instanceof Date) return value;
+        if (value instanceof Date) return value;
 
-  // Excel serial number format
-  if (typeof value === "number") {
-    const utcDays = value - 25569;
-    return new Date(utcDays * 86400 * 1000);
-  }
+        if (typeof value === "number") {
+          const utcDays = value - 25569;
+          return new Date(utcDays * 86400 * 1000);
+        }
 
-  // Normalize string formats like "2 - January - 2026"
-  if (typeof value === "string") {
-    const cleaned = value.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+        if (typeof value === "string") {
+          const cleaned = value
+            .replace(/-/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
 
-    const parsed = new Date(cleaned);
+          const parsed = new Date(cleaned);
 
-    if (!isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
+          if (!isNaN(parsed.getTime())) return parsed;
+        }
 
-  return null;
-};  
+        return null;
+      };
 
+      // Loop rows
       for (let i = 2; i <= sheet.rowCount; i++) {
-
         const row = sheet.getRow(i);
 
         let partyName = null;
@@ -130,28 +135,29 @@ const parseExcelDate = (value) => {
 
         let partyId = req.body.party_id || null;
 
-        // auto-create missing party
+        // Auto-detect party_id from party name
         if (!partyId) {
-
           if (!partyName || typeof partyName !== "string") {
             console.log(`Row ${i}: Missing party name`);
             continue;
           }
 
-const partyResult = await new Promise((resolve, reject) => {
-  pool.query(
-    "SELECT id FROM parties WHERE party_name = ?",
-    [partyName],
-    (err, data) => err ? reject(err) : resolve(data)
-  );
-});
+          const partyResult = await new Promise((resolve, reject) => {
+            pool.query(
+              "SELECT id FROM parties WHERE party_name = ?",
+              [partyName],
+              (err, data) => (err ? reject(err) : resolve(data))
+            );
+          });
 
-if (partyResult.length === 0) {
-  console.log(`Party '${partyName}' not found, skipping row ${i}`);
-  continue;
-}
+          if (partyResult.length === 0) {
+            console.log(
+              `Party '${partyName}' not found, skipping row ${i}`
+            );
+            continue;
+          }
 
-partyId = partyResult[0].id;
+          partyId = partyResult[0].id;
         }
 
         const values = [
@@ -178,51 +184,50 @@ partyId = partyResult[0].id;
           row.getCell(headerIndexes.beam_status)?.value || null
         ];
 
-await new Promise((resolve, reject) => {
-  pool.query(
-    `
-    INSERT INTO loom_production (
-      party_id,
-      beam_receive_date,
-      picks,
-      party_name,
-      sizing_name,
-      total_ends,
-      reed_count,
-      reed_space,
-      warp_ct,
-      weft_ct,
-      weave_finish,
-      flange_no,
-      actual_beam,
-      beam_start_date,
-      loom_no,
-      beam_fall,
-      beam_status
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        await new Promise((resolve, reject) => {
+          pool.query(
+            `
+            INSERT INTO loom_production (
+              party_id,
+              beam_receive_date,
+              picks,
+              party_name,
+              sizing_name,
+              total_ends,
+              reed_count,
+              reed_space,
+              warp_ct,
+              weft_ct,
+              weave_finish,
+              flange_no,
+              actual_beam,
+              beam_start_date,
+              loom_no,
+              beam_fall,
+              beam_status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
-    ON DUPLICATE KEY UPDATE
-      beam_receive_date = VALUES(beam_receive_date),
-      picks = VALUES(picks),
-      party_name = VALUES(party_name),
-      sizing_name = VALUES(sizing_name),
-      total_ends = VALUES(total_ends),
-      reed_count = VALUES(reed_count),
-      reed_space = VALUES(reed_space),
-      warp_ct = VALUES(warp_ct),
-      weft_ct = VALUES(weft_ct),
-      weave_finish = VALUES(weave_finish),
-      flange_no = VALUES(flange_no),
-      actual_beam = VALUES(actual_beam),
-      beam_fall = VALUES(beam_fall),
-      beam_status = VALUES(beam_status)
-    `,
-    values,
-    (err) => (err ? reject(err) : resolve())
-  );
-});
-
+            ON DUPLICATE KEY UPDATE
+              beam_receive_date = VALUES(beam_receive_date),
+              picks = VALUES(picks),
+              party_name = VALUES(party_name),
+              sizing_name = VALUES(sizing_name),
+              total_ends = VALUES(total_ends),
+              reed_count = VALUES(reed_count),
+              reed_space = VALUES(reed_space),
+              warp_ct = VALUES(warp_ct),
+              weft_ct = VALUES(weft_ct),
+              weave_finish = VALUES(weave_finish),
+              flange_no = VALUES(flange_no),
+              actual_beam = VALUES(actual_beam),
+              beam_fall = VALUES(beam_fall),
+              beam_status = VALUES(beam_status)
+            `,
+            values,
+            (err) => (err ? reject(err) : resolve())
+          );
+        });
       }
 
       res.json({
@@ -230,18 +235,14 @@ await new Promise((resolve, reject) => {
       });
 
     } catch (err) {
-
       console.error(err);
 
       res.status(500).json({
         error: "Excel upload failed"
       });
-
     }
   }
 );
-
-
 
 router.get(
   "/records",
