@@ -116,7 +116,7 @@ const parseExcelDate = (value) => {
   }
 
   return null;
-};
+};  
 
       for (let i = 2; i <= sheet.rowCount; i++) {
 
@@ -255,27 +255,27 @@ router.get(
 
     const sql = `
       SELECT
-        beam_receive_date,
-        
-        picks,
-        party_name,
-        sizing_name,
-        total_ends,
-        reed_count,
-        reed_space,
-        warp_ct,
-        weft_ct,
-        weave_finish,
-        flange_no,
-        actual_beam,
-        beam_start_date,
-        loom_no,
-        beam_fall,
-        beam_status
-        
-    FROM loom_production
-WHERE party_id = ?
-ORDER BY beam_receive_date DESC, id DESC;   
+        lp.beam_receive_date,
+        lp.picks,
+        lp.party_name,
+        lp.sizing_name,
+        lp.total_ends,
+        lp.reed_count,
+        lp.reed_space,
+        lp.warp_ct,
+        lp.weft_ct,
+        lp.weave_finish,
+        lp.flange_no,
+        lp.actual_beam,
+        lp.beam_start_date,
+        lp.loom_no,
+        lp.beam_fall,
+        lp.beam_status
+      FROM loom_production lp
+      JOIN parties p ON lp.party_id = p.id
+      WHERE lp.party_id = ?
+      AND p.is_deleted = 0
+      ORDER BY lp.beam_receive_date DESC, lp.id DESC
     `;
 
     pool.query(sql, [partyId], (error, data) => {
@@ -286,8 +286,6 @@ ORDER BY beam_receive_date DESC, id DESC;
           error: "Database error while fetching records"
         });
       }
-
-      console.log(`Found ${data.length} records for partyId ${partyId}`);
 
       res.json({
         message: "Records fetched successfully",
@@ -354,6 +352,9 @@ router.get("/export-excel", authUser, async (req, res) => {
   });
 
 });
+
+
+router.delete()
 
 
 
