@@ -124,7 +124,7 @@ const handleGoogleLogin = async (credentialResponse) => {
         <input
           name="email"
           type="text"
-          placeholder="abc@gmail.com"
+          placeholder="Enter email"
           value={formData.email}
           onChange={handleChange}
         />
