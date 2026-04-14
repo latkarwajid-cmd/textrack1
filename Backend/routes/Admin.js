@@ -194,7 +194,7 @@ router.delete("/parties/:id",authUser, roleAuthorization(["admin"] ), (req, res)
   });
 
 });
-
+  
 
 
 // ===============================

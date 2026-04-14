@@ -251,7 +251,9 @@ router.get(
 
     const partyId = req.user.party_id;
 
-    console.log(`Fetching records for partyId: ${partyId}, user: ${req.user.id}, role: ${req.user.role}`);
+    console.log(
+      `Fetching records for partyId: ${partyId}, user: ${req.user.id}, role: ${req.user.role}`
+    );
 
     const sql = `
       SELECT
@@ -272,9 +274,10 @@ router.get(
         lp.beam_fall,
         lp.beam_status
       FROM loom_production lp
-      JOIN parties p ON lp.party_id = p.id
+      INNER JOIN parties p
+        ON lp.party_id = p.id
       WHERE lp.party_id = ?
-      AND p.is_deleted = 0
+      AND p.is_active = 1
       ORDER BY lp.beam_receive_date DESC, lp.id DESC
     `;
 
@@ -282,10 +285,20 @@ router.get(
 
       if (error) {
         console.error("Fetch production records failed:", error);
+
         return res.status(500).json({
           error: "Database error while fetching records"
         });
       }
+
+      if (data.length === 0) {
+        return res.json({
+          message: "No records found or party inactive",
+          data: []
+        });
+      }
+
+      console.log(`Found ${data.length} records`);
 
       res.json({
         message: "Records fetched successfully",
@@ -354,7 +367,6 @@ router.get("/export-excel", authUser, async (req, res) => {
 });
 
 
-router.delete()
 
 
 
